@@ -16,10 +16,9 @@
 
 ## ⚙️ How to Use
 
-### 1. Clone the repository
+### 1. Clone the repository(Bash)
 
 ```
-bash
 git clone https://github.com/AjayyXD/TrackForces.git
 cd TrackForces
 ```
