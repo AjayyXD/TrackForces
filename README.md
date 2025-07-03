@@ -43,7 +43,7 @@ java TrackForces
 
 
  📸 Screenshots
- <details> <summary>Click to expand</summary>
+ <details> 
 === 📊 TrackForces Stats ===
 
 800    | ████████████████     14
