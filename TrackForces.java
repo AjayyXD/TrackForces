@@ -24,6 +24,8 @@ class Welcome {
     }
 }
 
+
+
 // Handles logging the questions solved today into a file.
 class InputData {
     void logTodayQuestions() {
@@ -123,6 +125,8 @@ class InputData {
     }
 }
 
+
+
 // Handles reading and displaying logs and stats.
 class OutputData {
     void viewLog() {
@@ -147,31 +151,98 @@ class OutputData {
 
         try {
             BufferedReader reader = new BufferedReader(new FileReader("trackforces_stats.txt"));
-            int rated800 = Integer.parseInt(reader.readLine());
-            int rated900 = Integer.parseInt(reader.readLine());
-            int rated1000 = Integer.parseInt(reader.readLine());
-            int rated1100 = Integer.parseInt(reader.readLine());
-            int rated1200 = Integer.parseInt(reader.readLine());
-            int rated1300 = Integer.parseInt(reader.readLine());
+            int[] counts = new int[6];
+            String[] labels = { "800", "900", "1000", "1100", "1200", "1300" };
+
+            for (int i = 0; i < 6; i++) {
+                counts[i] = Integer.parseInt(reader.readLine());
+            }
             reader.close();
 
-            int total = rated800 + rated900 + rated1000 + rated1100 + rated1200 + rated1300;
+            int max = 0, total = 0;
+            for (int c : counts) {
+                if (c > max)
+                    max = c;
+                total += c;
+            }
 
-            System.out.println("800 rated solved  : " + rated800);
-            System.out.println("900 rated solved  : " + rated900);
-            System.out.println("1000 rated solved : " + rated1000);
-            System.out.println("1100 rated solved : " + rated1100);
-            System.out.println("1200 rated solved : " + rated1200);
-            System.out.println("1300 rated solved : " + rated1300);
-            System.out.println("-----------------------");
-            System.out.println("Total solved      : " + total);
-        } catch (FileNotFoundException e) {
-            System.out.println("❌ Stats file not found.");
-        } catch (IOException | NumberFormatException e) {
+            int MAX_BAR_WIDTH = 20;
+
+            for (int i = 0; i < 6; i++) {
+                int barLength = (int) Math.round(((double) counts[i] / max) * MAX_BAR_WIDTH);
+                String bar = "█".repeat(barLength);
+                System.out.printf("%-6s | %-20s %3d\n", labels[i], bar, counts[i]);
+            }
+
+            System.out.println("-------------------------------------");
+            System.out.println("Total solved              : " + total);
+
+        } catch (IOException e) {
             System.out.println("❌ Error reading stats file.");
         }
-    }
+    }    
 }
+
+
+
+//Checks for data for initial ru
+class FirstRun{
+    void check(){
+        
+
+         File statsFile = new File("trackforces_stats.txt");
+         System.out.println("🆕 First time running TrackForces!");
+            System.out.println("No data files found. Let's set up your stats.\n");
+
+            Scanner setupScanner = new Scanner(System.in);
+            System.out.println("Choose an option:");
+            System.out.println("1. Manually enter past stats now");
+            System.out.println("2. Start fresh with empty stats");
+            System.out.print("> ");
+            int setupChoice = setupScanner.nextInt();
+            setupScanner.nextLine(); // clear newline
+
+            if (setupChoice == 1) {
+                try {
+                    BufferedWriter statsWriter = new BufferedWriter(new FileWriter(statsFile));
+                    System.out.println("Enter number of questions solved for each rating:");
+
+                    int[] ratings = { 800, 900, 1000, 1100, 1200, 1300 };
+                    for (int r : ratings) {
+                        System.out.print(r + ": ");
+                        int count = setupScanner.nextInt();
+                        statsWriter.write(count + "\n");
+                    }
+                    statsWriter.close();
+
+                    
+
+                    System.out.println("\n✅ Stats initialized! You can now use TrackForces normally.");
+                } catch (IOException e) {
+                    System.out.println("❌ Error creating files: " + e.getMessage());
+                }
+            } else {
+                // Option 2: start fresh
+                try {
+                    BufferedWriter statsWriter = new BufferedWriter(new FileWriter(statsFile));
+                    for (int i = 0; i < 6; i++)
+                        statsWriter.write("0\n");
+                    statsWriter.close();
+                    System.out.println("\n✅ Starting fresh with empty stats!");
+                } catch (IOException e) {
+                    System.out.println("❌ Error initializing files: " + e.getMessage());
+                }
+            }
+
+            System.out.println("Restart the program to continue.");
+            return; // Exit after setup
+        }
+
+    
+}
+
+
+
 
 // Main class that shows the menu and handles user input.
 public class TrackForces {
@@ -180,8 +251,15 @@ public class TrackForces {
         Welcome welcome = new Welcome();
         InputData input = new InputData();
         OutputData output = new OutputData();
+        FirstRun firstrun = new FirstRun();
 
         welcome.showWelcome();
+
+        File statsFile = new File("trackforces_stats.txt");
+
+        if(!statsFile.exists()){
+            firstrun.check();
+        }
 
         while (true) {
             System.out.println("\nChoose an option:\n");
