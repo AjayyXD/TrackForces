@@ -6,11 +6,12 @@
 
 ## 🧩 Features
 
-- 📝 Log how many questions you solved each day  
-- 🎯 Record the rating of each question (800, 900, 1000...)  
-- 📖 View a full log of all sessions  
-- 📊 See overall stats by difficulty level  
-- 💻 Lightweight, terminal-based interface  
+- ✅ **Daily logging** of questions and ratings
+- 📊 **Graphical stats** (ASCII bar graph view by rating)
+- 🗓️ **Session history** with average rating
+- 🆕 **First-time setup prompt** for new users
+- 💾 Saves progress across sessions using local files
+- 🐚 Lightweight CLI tool for Linux / Windows 
 
 ---
 
@@ -39,6 +40,21 @@ java TrackForces
 | `trackforces_stats.txt` | Stores total counts by rating level   |
 | `.gitignore`            | Prevents logs/stats from being pushed |
  __________________________________________________________________
+
+
+ 📸 Screenshots
+ <details> <summary>Click to expand</summary>
+=== 📊 TrackForces Stats ===
+
+800    | ████████████████     14
+900    | ████████             8
+1000   | ███████              7
+1100   | ██                   2
+1200   | █                   1
+1300   |                     0
+-------------------------------
+Total solved              : 32
+</details>
 
  👤 Author
 Made with ❤️ by Ajay Pradeep.
