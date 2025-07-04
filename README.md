@@ -11,7 +11,10 @@
 - 🗓️ **Session history** with average rating
 - 🆕 **First-time setup prompt** for new users
 - 💾 Saves progress across sessions using local files
-- 🐚 Lightweight CLI tool for Linux / Windows 
+- 🐚 Lightweight CLI tool for Linux / Windows
+ - 🙋 First-time setup asks for your Codeforces username and current rating
+ - 🏆 Automatically assigns and displays your Codeforces title based on rating
+ - 🪪 Displays username, rating, and title in the stats menu
 
 ---
 
