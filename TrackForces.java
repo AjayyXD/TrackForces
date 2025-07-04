@@ -5,7 +5,19 @@ import java.io.*;
 
 // Displays the welcome banner and today's date.
 class Welcome {
+
+    public static void clearScreen() {
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+    }    
+
+
+
+
     void showWelcome() {
+
+        clearScreen();
+
         System.out.println(" _____                     _    ______                               \n" +
                             "|_   _|                   | |   |  ___|                              \n" +
                             "  | |   _ __   __ _   ___ | | __| |_     ___   _ __   ___   ___  ___ \n" +
@@ -18,9 +30,9 @@ class Welcome {
         String formattedToday = today.format(formatter);
 
         System.out.println();
-        System.out.println("+--------------------------------------------+");
-        System.out.printf("| %-42s |\n", "Today's Date: " + formattedToday);
-        System.out.println("+--------------------------------------------+");
+        System.out.println("+-------------------------------------+");
+        System.out.printf("| %-35s |\n", "Today's Date: " + formattedToday);
+        System.out.println("+-------------------------------------+");
     }
 }
 
@@ -147,10 +159,25 @@ class OutputData {
     }
 
     void viewStats() {
-        System.out.println("\n=== 📊 TrackForces Stats ===\n");
+        System.out.println("\n======= 📊 TrackForces Stats ========\n");
 
         try {
             BufferedReader reader = new BufferedReader(new FileReader("trackforces_stats.txt"));
+            BufferedReader reader2 = new BufferedReader(new FileReader("trackforces_user.txt"));
+            String username;
+            String title;
+            int rating;
+
+            username = reader2.readLine();
+            rating = Integer.parseInt(reader2.readLine());
+            title = reader2.readLine();
+            
+            System.out.println("-------------------------------------");
+            System.out.println("Username: "+username);
+            System.out.println("Rating: "+rating);
+            System.out.println("Title: "+title);
+            System.out.println("-------------------------------------");
+
             int[] counts = new int[6];
             String[] labels = { "800", "900", "1000", "1100", "1200", "1300" };
 
@@ -185,16 +212,60 @@ class OutputData {
 
 
 
-//Checks for data for initial ru
+//Checks for data for initial run
 class FirstRun{
     void check(){
         
-
+         File userFile = new File("trackforces_user.txt");
          File statsFile = new File("trackforces_stats.txt");
          System.out.println("🆕 First time running TrackForces!");
             System.out.println("No data files found. Let's set up your stats.\n");
 
             Scanner setupScanner = new Scanner(System.in);
+            System.out.println("Enter your username:");
+            String username = setupScanner.nextLine();
+            System.out.println("Hello "+username+", What's your rating?");
+            int rating = setupScanner.nextInt();
+            setupScanner.nextLine();
+
+           try{
+            BufferedWriter userWriter = new BufferedWriter(new FileWriter(userFile));
+            userWriter.write(username+"\n");
+            userWriter.write(rating+"\n");
+            String title="";
+
+
+            if(rating==0){
+                title="Unrated";
+            }else if(rating<1200){
+                title="Newbie";
+            }else if(rating<1400){
+                title="Pupil";
+            }else if(rating<1600){
+                title="Specialist";
+            }else if(rating<1900){
+                title="Expert";
+            }else if(rating<2100){
+                title="Candidate Master";
+            }else if(rating<2300){
+                title="Master";
+            }else if(rating<2400){
+                title="International Master";
+            }else if(rating<2600){
+                title="GrandMaster";
+            }else if(rating<3000){
+                title="International GrandMaster";
+            }else if(rating<4000){
+                title="Legendary GrandMaster";
+            }
+
+            userWriter.write(title+"\n");
+            userWriter.close();
+
+
+        }catch(IOException e){
+            System.out.println("Some error occured in writing user file");
+           }
             System.out.println("Choose an option:");
             System.out.println("1. Manually enter past stats now");
             System.out.println("2. Start fresh with empty stats");
@@ -253,7 +324,7 @@ public class TrackForces {
         OutputData output = new OutputData();
         FirstRun firstrun = new FirstRun();
 
-        welcome.showWelcome();
+       
 
         File statsFile = new File("trackforces_stats.txt");
 
@@ -262,6 +333,7 @@ public class TrackForces {
         }
 
         while (true) {
+            welcome.showWelcome();
             System.out.println("\nChoose an option:\n");
             System.out.println("1. Log today's questions");
             System.out.println("2. Display previous logs");
