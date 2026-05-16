@@ -93,3 +93,48 @@ class database_handler :
         conn.commit()
         conn.close()
 
+    def get_user_data(self):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        query = "SELECT handle,rating from User WHERE is_init = 1;"
+        cursor.execute(query)
+        user_data = cursor.fetchall()
+        return user_data[0]
+    
+    def get_solved_stats(self,handle):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        query1 = """SELECT 
+            COUNT(*) as total_submissions,
+            SUM(CASE WHEN verdict = 'OK' THEN 1 ELSE 0 END) as total_accepted_submissions
+            FROM Submissions 
+            WHERE user_handle = ?;"""
+        query2 = """SELECT COUNT(DISTINCT question_id) as unique_solved
+            FROM Submissions
+            WHERE user_handle = ? AND verdict = 'OK';"""
+        query3 = """SELECT COUNT(DISTINCT question_id) as unique_unsolved
+            FROM Submissions
+            WHERE user_handle = ? 
+            AND question_id NOT IN (
+            SELECT DISTINCT question_id 
+            FROM Submissions 
+            WHERE user_handle = ? AND verdict = 'OK');"""
+        results = {
+        "total_subs": 0,
+        "total_solved_subs": 0,
+        "unique_solved_qns": 0,
+        "unique_unsolved_qns": 0
+        }
+        cursor.execute(query1,(handle,))
+        result1 = cursor.fetchone()
+        results["total_subs"] = result1[0]
+        results["total_solved_subs"] = result1[1]
+        cursor.execute(query2,(handle,))
+        results2 = cursor.fetchone()
+        results["unique_solved_qns"] = results2[0]
+        cursor.execute(query3,(handle,handle))
+        results3 = cursor.fetchone()
+        results["unique_unsolved_qns"] = results3[0]
+
+        return results
+
