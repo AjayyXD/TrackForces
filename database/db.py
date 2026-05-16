@@ -13,7 +13,7 @@ class database_handler :
                 user=os.getenv("DB_USER"),
                 password=os.getenv("DB_PASS"),
                 host=os.getenv("DB_HOST"),
-                port=os.getenv("DB_PORT"),
+                port=int(os.getenv("DB_PORT")),
                 database=os.getenv("DB_NAME")
             )
             return conn
@@ -35,7 +35,10 @@ class database_handler :
         query = "SELECT is_init FROM User;"
         cursor.execute(query)
         result = cursor.fetchone()
-        return result[0]
+        if result :
+            return 1
+        else :
+            return 0
     
     def last_recorded_submission(self):
         conn = self.get_connection()
