@@ -56,6 +56,9 @@ class database_handler :
         first = 0
         query1 = "INSERT IGNORE INTO Question (id,contest_id,problem_index,rating) VALUES (?,?,?,?)"
         query2 = "INSERT IGNORE INTO Submissions (submission_id,user_handle,question_id,verdict) VALUES (?,?,?,?)"
+        query3 = "INSERT IGNORE INTO Category (name) VALUES (?);"
+        query4 = "SELECT id FROM Category WHERE name = ?;"
+        query5 = "INSERT IGNORE INTO Question_Categories (question_id, category_id) VALUES (?, ?);"
         for x in data:
             if not first :
                 first = data[x]["id"]
@@ -66,6 +69,13 @@ class database_handler :
             conn.commit()
             cursor.execute(query2,(data[x]["id"],handle,f"{data[x]["contest_id"]}{data[x]["index"]}",data[x]["verdict"]))
             conn.commit()
+            for tags in data[x].get("tags",[]):
+                cursor.execute(query3,(tags,))
+                cursor.execute(query4,(tags,))
+                category_id = cursor.fetchone()[0]
+                cursor.execute(query5,(f"{data[x]["contest_id"]}{data[x]["index"]}",category_id))
+            conn.commit()
+
     
     def update_last_sub_id(self,handle,updated_last_sub_id):
         conn = self.get_connection()
@@ -87,9 +97,17 @@ class database_handler :
         self.update_last_sub_id(handle,updated_last_sub_id)
         query1 = "INSERT IGNORE INTO Question (id,contest_id,problem_index,rating) VALUES (?,?,?,?)"
         query2 = "INSERT IGNORE INTO Submissions (submission_id,user_handle,question_id,verdict) VALUES (?,?,?,?)"
+        query3 = "INSERT IGNORE INTO Category (name) VALUES (?);"
+        query4 = "SELECT id FROM Category WHERE name = ?;"
+        query5 = "INSERT IGNORE INTO Question_Categories (question_id, category_id) VALUES (?, ?);"
         for x in submissions_data:
             cursor.execute(query1,(f"{submissions_data[x]["contest_id"]}{submissions_data[x]["index"]}",submissions_data[x]["contest_id"],submissions_data[x]["index"],submissions_data[x]["rating"]))
             cursor.execute(query2,(submissions_data[x]["id"],handle,f"{submissions_data[x]["contest_id"]}{submissions_data[x]["index"]}",submissions_data[x]["verdict"]))
+        for tags in submissions_data[x].get("tags",[]):
+                cursor.execute(query3,(tags,))
+                cursor.execute(query4,(tags,))
+                category_id = cursor.fetchone()[0]
+                cursor.execute(query5,(f"{submissions_data[x]["contest_id"]}{submissions_data[x]["index"]}",category_id))
         conn.commit()
         conn.close()
 
@@ -119,11 +137,28 @@ class database_handler :
             SELECT DISTINCT question_id 
             FROM Submissions 
             WHERE user_handle = ? AND verdict = 'OK');"""
+        query4 = """SELECT ROUND(AVG(q.rating), 0) as avg_solved_rating
+            FROM Question q
+            JOIN Submissions s ON q.id = s.question_id
+            WHERE s.user_handle = ? 
+            AND s.verdict = 'OK' 
+            AND q.rating > 0;"""
+        query5 = """SELECT 
+            q.rating,
+            COUNT(DISTINCT s.question_id) as problems_solved
+            FROM Question q
+            JOIN Submissions s ON q.id = s.question_id
+            WHERE s.user_handle = ? 
+            AND s.verdict = 'OK' 
+            AND q.rating > 0
+            GROUP BY q.rating
+            ORDER BY q.rating ASC;"""
         results = {
         "total_subs": 0,
         "total_solved_subs": 0,
         "unique_solved_qns": 0,
-        "unique_unsolved_qns": 0
+        "unique_unsolved_qns": 0,
+        "avg_rating" : 0,
         }
         cursor.execute(query1,(handle,))
         result1 = cursor.fetchone()
@@ -135,6 +170,13 @@ class database_handler :
         cursor.execute(query3,(handle,handle))
         results3 = cursor.fetchone()
         results["unique_unsolved_qns"] = results3[0]
+        cursor.execute(query4,(handle,))
+        result4 = cursor.fetchone()
+        results["avg_rating"] = int(result4[0])
+        cursor.execute(query5,(handle,))
+        result5 = cursor.fetchall()
+        results["rating_distribution"] = result5
+
 
         return results
 
