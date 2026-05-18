@@ -18,6 +18,8 @@ class stats_handler:
         general_stats = self.general_stats(user_data[0])
         category_stats = self.category_stats(user_data[0])
         stats = {
+            "handle" : user_data[0],
+            "rating" : int(user_data[1]),
             "general_stats" : general_stats,
             "category_stats" : category_stats
         }
