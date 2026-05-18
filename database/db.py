@@ -103,11 +103,11 @@ class database_handler :
         for x in submissions_data:
             cursor.execute(query1,(f"{submissions_data[x]["contest_id"]}{submissions_data[x]["index"]}",submissions_data[x]["contest_id"],submissions_data[x]["index"],submissions_data[x]["rating"]))
             cursor.execute(query2,(submissions_data[x]["id"],handle,f"{submissions_data[x]["contest_id"]}{submissions_data[x]["index"]}",submissions_data[x]["verdict"]))
-        for tags in submissions_data[x].get("tags",[]):
-                cursor.execute(query3,(tags,))
-                cursor.execute(query4,(tags,))
-                category_id = cursor.fetchone()[0]
-                cursor.execute(query5,(f"{submissions_data[x]["contest_id"]}{submissions_data[x]["index"]}",category_id))
+            for tags in submissions_data[x].get("tags",[]):
+                    cursor.execute(query3,(tags,))
+                    cursor.execute(query4,(tags,))
+                    category_id = cursor.fetchone()[0]
+                    cursor.execute(query5,(f"{submissions_data[x]["contest_id"]}{submissions_data[x]["index"]}",category_id))
         conn.commit()
         conn.close()
 
@@ -179,4 +179,44 @@ class database_handler :
 
 
         return results
+    
+    def get_category_stats(self,handle):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        query1 = """SELECT 
+            c.name AS category_name,
+            COUNT(DISTINCT s.question_id) AS unique_problems_solved
+            FROM Submissions s
+            JOIN Question_Categories qc ON s.question_id = qc.question_id
+            JOIN Category c ON qc.category_id = c.id
+            WHERE s.user_handle = ? 
+            AND s.verdict = 'OK'
+            GROUP BY c.id, c.name
+            ORDER BY unique_problems_solved DESC;"""
+        query2 = """SELECT 
+            c.name AS category_name,
+            COUNT(DISTINCT CASE WHEN s.verdict = 'OK' THEN s.question_id END) AS unique_solved,
+            ROUND(
+            (SUM(CASE WHEN s.verdict = 'OK' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 
+            2
+            ) AS submission_accuracy_percentage
+            FROM Submissions s
+            JOIN Question_Categories qc ON s.question_id = qc.question_id
+            JOIN Category c ON qc.category_id = c.id
+            WHERE s.user_handle = ?
+            GROUP BY c.id, c.name
+            ORDER BY submission_accuracy_percentage ASC; """
+        cursor.execute(query1,(handle,))
+        result1 = cursor.fetchall()
+        cursor.execute(query2,(handle,))
+        result2 = cursor.fetchall()
+        result = {
+            "category_wise_count" : result1,
+            "category_wise_accuracy" : result2
+        }
+        return result
+        
+
+
+
 
