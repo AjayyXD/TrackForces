@@ -15,6 +15,7 @@ class stats_handler:
 
     def get_user_stats(self):
         user_data = self.database_handler.get_user_data()
+        self.database_handler.update_fill_submission(user_data[0])
         general_stats = self.general_stats(user_data[0])
         category_stats = self.category_stats(user_data[0])
         stats = {

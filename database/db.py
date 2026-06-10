@@ -94,12 +94,13 @@ class database_handler :
         complete_data = cf_client.update_user_submissions(handle,last_sub_id[0])
         submissions_data = complete_data[0]
         updated_last_sub_id = complete_data[1]
-        self.update_last_sub_id(handle,updated_last_sub_id)
+        
         query1 = "INSERT IGNORE INTO Question (id,contest_id,problem_index,rating) VALUES (?,?,?,?)"
         query2 = "INSERT IGNORE INTO Submissions (submission_id,user_handle,question_id,verdict) VALUES (?,?,?,?)"
         query3 = "INSERT IGNORE INTO Category (name) VALUES (?);"
         query4 = "SELECT id FROM Category WHERE name = ?;"
         query5 = "INSERT IGNORE INTO Question_Categories (question_id, category_id) VALUES (?, ?);"
+        query6 = "UPDATE User SET last_sub_id = ? WHERE handle = ?;"
         for x in submissions_data:
             cursor.execute(query1,(f"{submissions_data[x]["contest_id"]}{submissions_data[x]["index"]}",submissions_data[x]["contest_id"],submissions_data[x]["index"],submissions_data[x]["rating"]))
             cursor.execute(query2,(submissions_data[x]["id"],handle,f"{submissions_data[x]["contest_id"]}{submissions_data[x]["index"]}",submissions_data[x]["verdict"]))
@@ -108,6 +109,7 @@ class database_handler :
                     cursor.execute(query4,(tags,))
                     category_id = cursor.fetchone()[0]
                     cursor.execute(query5,(f"{submissions_data[x]["contest_id"]}{submissions_data[x]["index"]}",category_id))
+        cursor.execute(query6,(updated_last_sub_id,handle))
         conn.commit()
         conn.close()
 
