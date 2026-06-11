@@ -1,3 +1,4 @@
+import sys
 from database import db
 class stats_handler:
     def __init__(self):
